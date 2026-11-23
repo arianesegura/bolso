@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Bolso</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6c3fd1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bolso">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <link rel="stylesheet" href="estilo.css">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <div
+                style="text-align:center;font-weight:700;opacity:.85;font-size:13px;letter-spacing:.6px;margin-bottom:8px">
+                Bolso</div>
+            <div class="mn"><button id="pv">‹</button><span id="mo"></span><button id="nx">›</button></div>
+            <div class="bal"><small>Saldo do mês</small>
+                <h1 id="sal"></h1>
+            </div>
+        </header>
+        <div class="pills">
+            <div class="pill"><small>↑ Receitas</small><b class="p" id="rec"></b></div>
+            <div class="pill"><small>↓ Despesas</small><b class="n" id="des"></b></div>
+        </div>
+        <main id="v"></main>
+    </div>
+    <nav>
+        <div><button data-t="home"><span>🏠</span>Início</button><button
+                data-t="tx"><span>🧾</span>Lançamentos</button><button id="fab">+</button><button
+                data-t="cc"><span>💳</span>Cartões</button><button data-t="bu"><span>🎯</span>Orçamento</button></div>
+    </nav>
+    <div id="m">
+        <div class="sh" id="sh"></div>
+    </div>
+    <div id="rp"></div>
+    <div id="ts"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
