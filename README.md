@@ -5,10 +5,10 @@ App de finanças pessoais (PWA). Os dados ficam no aparelho (localStorage); use 
 ## Publicar no GitHub Pages
 1. Envie TODOS os arquivos desta pasta para a raiz do repositório.
 2. Settings > Pages > Branch `main` > pasta `/ (root)` > Save.
-3. Abra `https://SEU-USUARIO.github.io/bolso/` no celular.
+3. Abra `https://arianesegura.github.io/bolso/` no celular.
 
 ## Instalar
-- Android (Chrome): menu ⋮ > Instalar app.
+- Android (Chrome): menu ⋮ > Instalar e criar atalho.
 - iPhone (Safari): Compartilhar > Adicionar à Tela de Início.
 
 ## Atualizar o app depois
