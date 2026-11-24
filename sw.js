@@ -1,10 +1,11 @@
 // Service worker: guarda os arquivos do app para funcionar offline.
 // Ao alterar index.html, estilo.css ou app.js, aumente o número da versão abaixo (v1 -> v2).
-const CACHE = 'bolso-v4';
+const CACHE = 'bolso-v6';
 const ARQUIVOS = ['./', 'index.html', 'estilo.css', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
+  // Tolerante: se algum arquivo faltar no GitHub, o app ainda instala.
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(ARQUIVOS.map(a => c.add(a).catch(() => null)))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
