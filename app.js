@@ -1,77 +1,109 @@
-const $=s=>document.querySelector(s),F=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const C={Moradia:['🏠','#4f7cff'],Mercado:['🛒','#2fb36d'],Alimentação:['🍽️','#f59e0b'],Delivery:['🛵','#ec4899'],Transporte:['🚗','#d4a017'],Lazer:['🎉','#8b5cf6'],Saúde:['💊','#14b8a6'],Educação:['📚','#0ea5e9'],Assinaturas:['📺','#d946ef'],Compras:['🛍️','#f97316'],Dívidas:['💳','#64748b'],Outros:['📦','#94a3b8']};
-const RC={'Salário':'💼','Trabalho extra':'💸','Outros':'➕'},CARDS=['Nubank','Neon','Inter','MercadoPago','Outro'];
-const MS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const KW=[[/ifood|rappi|uber eats|delivery/,'Delivery'],[/uber|99 pop|táxi|posto|gasolina|combust|estacion|pedágio|metrô|ônibus/,'Transporte'],[/mercado livre|amazon|shopee|shein|magalu|loja|tênis|roupa|notebook/,'Compras'],[/mercado|atacad|assaí|carrefour|feira|açougue|hortifruti/,'Mercado'],[/restaurante|almoço|jantar|lanche|padaria|café|pizza/,'Alimentação'],[/cinema|show|ingresso|viagem|balada|teatro/,'Lazer'],[/netflix|spotify|disney|hbo|icloud|assinatura/,'Assinaturas'],[/aluguel|condom|luz|energia|água|internet|gás|iptu/,'Moradia'],[/farmác|drogaria|médic|consulta|dentista|academia|plano de saúde|exame/,'Saúde'],[/escola|faculdade|curso|mensalidade|livro/,'Educação'],[/empréstimo|financiamento|juros|consórcio/,'Dívidas']];
-let S={};try{S=JSON.parse(localStorage.getItem('fin1'))||{}}catch(e){}
-S.tx=S.tx||[];S.bud=S.bud||{};const nw=new Date();S.y=nw.getFullYear();S.m=nw.getMonth();S.tab='home';
-const save=()=>{try{localStorage.setItem('fin1',JSON.stringify({tx:S.tx,bud:S.bud}))}catch(e){}};
-const ix=t=>+t.date.slice(0,4)*12+ +t.date.slice(5,7)-1,en=t=>t.rec?1e9:t.t=='c'?ix(t)+(t.n||1)-1:ix(t);
-const amt=(t,i)=>i>=ix(t)&&i<=en(t)?(t.t=='c'?t.v/(t.n||1):t.v):0;
-const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
-const info=(t,cur)=>t.t=='c'&&t.n>1?` · ${cur-ix(t)+1}/${t.n}`:t.rec?' · fixa':'';
-const row=(x,cur)=>{const t=x.t,r=t.t=='r',cl=r?'#1fa971':(C[t.cat]||C.Outros)[1];return `<div class="it"><span class="ic" style="background:${cl}28">${r?RC[t.cat]||'💰':(C[t.cat]||C.Outros)[0]}</span><div class="g1"><b>${esc(t.desc)}</b><small>${t.cat} · ${t.date.slice(8)}/${t.date.slice(5,7)}${info(t,cur)}${t.t=='c'?' · '+t.card:''}</small></div><span class="am ${r?'p':'n'}">${r?'':'−'}${F(x.a)}</span><button class="x" data-del="${t.id}">✕</button></div>`};
-function donut(bc,tot){const e=Object.entries(bc).sort((a,b)=>b[1]-a[1]);if(!e.length)return '<div class="card em">Nenhuma despesa neste mês.<br>Toque no + para lançar.</div>';let o=25,s='';
-e.forEach(([k,v])=>{const p=v/tot*100;s+=`<circle r="15.9155" cx="21" cy="21" fill="none" stroke="${(C[k]||C.Outros)[1]}" stroke-width="5" stroke-dasharray="${p} ${100-p}" stroke-dashoffset="${o}"/>`;o-=p});
-return `<div class="card"><h3>Despesas por categoria</h3><div class="cd"><svg viewBox="0 0 42 42" width="190" height="190">${s}<text x="21" y="21.5" text-anchor="middle" font-size="3.6" font-weight="700" style="fill:var(--tx)">${F(tot)}</text></svg></div>`+e.map(([k,v])=>`<div class="lg"><span class="dot" style="background:${(C[k]||C.Outros)[1]}"></span><span class="g1">${(C[k]||C.Outros)[0]} ${k}</span><b>${F(v)}</b><small style="color:var(--mu);width:38px;text-align:right">${Math.round(v/tot*100)}%</small></div>`).join('')+'</div>'}
-function R(){const cur=S.y*12+S.m,its=S.tx.map(t=>({t,a:amt(t,cur)})).filter(x=>x.a).sort((a,b)=>b.t.date.localeCompare(a.t.date));
-const ds=its.filter(x=>x.t.t!='r'),rec=its.filter(x=>x.t.t=='r').reduce((s,x)=>s+x.a,0),des=ds.reduce((s,x)=>s+x.a,0);
-$('#mo').textContent=MS[S.m]+' '+S.y;$('#sal').textContent=F(rec-des);$('#rec').textContent=F(rec);$('#des').textContent=F(des);
-document.querySelectorAll('nav [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t==S.tab));
-const bc={};ds.forEach(x=>bc[x.t.cat]=(bc[x.t.cat]||0)+x.a);let h='';
-if(S.tab=='home')h=donut(bc,des)+BK;
-if(S.tab=='tx')h='<div class="bk" style="margin-bottom:12px"><button id="rpt">📑 Relatório / Exportar</button></div>'+(its.length?`<div class="card">${its.map(x=>row(x,cur)).join('')}</div>`:'<div class="card em">Sem lançamentos neste mês.</div>');
-if(S.tab=='cc'){h=CARDS.map(k=>{const l=its.filter(x=>x.t.t=='c'&&x.t.card==k),f=l.reduce((s,x)=>s+x.a,0);
-const rest=S.tx.filter(t=>t.t=='c'&&t.card==k).reduce((s,t)=>s+(t.v/(t.n||1))*Math.max(0,en(t)-Math.max(cur,ix(t)-1)),0);
-return `<div class="card"><h3>💳 ${k}</h3><div class="bg"><div class="g1"><small style="color:var(--mu)">Fatura do mês</small><div class="big n">${F(f)}</div></div><div style="text-align:right"><small style="color:var(--mu)">Parcelas a vencer</small><br><b>${F(rest)}</b></div></div>${l.map(x=>row(x,cur)).join('')}</div>`}).join('')}
-if(S.tab=='bu')h='<div class="card"><h3>Limite mensal por categoria</h3>'+Object.keys(C).map(k=>{const sp=bc[k]||0,l=S.bud[k]||0,p=l?sp/l*100:0;return `<div style="padding:8px 0;border-top:1px solid var(--bd)"><div class="bg"><span class="g1">${C[k][0]} ${k}<small style="color:var(--mu);display:block">${F(sp)} gastos</small></span><input type="number" inputmode="decimal" placeholder="Limite" value="${l||''}" data-b="${k}"></div>${l?`<div class="bar"><i style="width:${Math.min(100,p)}%;background:${p>100?'var(--r)':p>80?'#f59e0b':'var(--g)'}"></i></div>`:''}</div>`}).join('')+'</div>';
-$('#v').innerHTML=h}
-let FM;const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-function chips(){const L=FM.t=='r'?Object.keys(RC):Object.keys(C);$('#ch').innerHTML=L.map(k=>`<button data-c="${k}" class="${FM.cat==k?'s':''}" style="${FM.cat==k?'background:'+(FM.t=='r'?'#1fa971':C[k][1]):''}">${FM.t=='r'?RC[k]:C[k][0]} ${k}</button>`).join('')}
-function open(){FM={t:'d',cat:'Outros',man:false};$('#sh').dataset.t='d';$('#sh').innerHTML=`<div class="seg"><button data-k="d">Despesa</button><button data-k="r">Receita</button><button data-k="c">Cartão</button></div><input id="va" inputmode="decimal" placeholder="Valor (R$) ex.: 49,90" class="big"><input id="de" placeholder="Descrição (ex.: iFood, Uber, Salário)"><div class="chips" id="ch"></div><input type="date" id="dt" value="${today()}"><div class="c" style="display:flex;gap:8px"><select id="cd">${CARDS.map(k=>`<option>${k}</option>`).join('')}</select><input id="np" type="number" min="1" max="60" placeholder="Parcelas" value="1"></div><label class="rc"><input type="checkbox" id="rp"> Repete todo mês (conta fixa / salário)</label><button id="sv">Salvar</button>`;chips();$('#m').classList.add('o')}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b){if(e.target.id=='m')$('#m').classList.remove('o');return}
-if(b.id=='pv'||b.id=='nx'){S.m+=b.id=='pv'?-1:1;if(S.m<0){S.m=11;S.y--}if(S.m>11){S.m=0;S.y++}R()}
-else if(b.dataset.t){S.tab=b.dataset.t;R()}else if(b.id=='fab')open();
-else if(b.dataset.k){FM.t=b.dataset.k;FM.man=false;FM.cat=FM.t=='r'?'Salário':'Outros';$('#sh').dataset.t=FM.t;if(FM.t!='r')det();chips()}
-else if(b.dataset.c){FM.cat=b.dataset.c;FM.man=true;chips()}
-else if(b.dataset.del){if(b.classList.contains('w')){S.tx=S.tx.filter(t=>t.id!=b.dataset.del);save();R()}else{b.classList.add('w');b.textContent='Excluir?'}}
-else if(b.id=='rpt')openRep();else if(b.id=='cl')$('#m').classList.remove('o');else if(b.id=='pr')imprimir();else if(b.id=='cv')csv();else if(b.id=='ex')exportar();else if(b.id=='im')$('#fi').click();
-else if(b.id=='sv'){const raw=$('#va').value.trim(),v=raw.includes(',')?parseFloat(raw.replace(/\./g,'').replace(',','.')):parseFloat(raw),d=$('#de').value.trim();if(!(v>0)||!d||!$('#dt').value){$('#va').style.borderColor='var(--r)';return}
-S.tx.push({id:Date.now(),t:FM.t,v,desc:d,cat:FM.cat,date:$('#dt').value,n:FM.t=='c'?Math.max(1,+$('#np').value||1):1,card:$('#cd').value,rec:FM.t!='c'&&$('#rp').checked});save();$('#m').classList.remove('o');R()}});
-function det(){if(FM.man||FM.t=='r')return;const d=($('#de').value||'').toLowerCase();const k=KW.find(x=>x[0].test(d));FM.cat=k?k[1]:'Outros'}
-document.addEventListener('input',e=>{if(e.target.id=='de'&&!FM.man){det();chips()}});
-document.addEventListener('change',e=>{if(e.target.id&&e.target.id.startsWith('rp')){if(e.target.id=='rpP')$('#rpCu').style.display=e.target.value=='c'?'flex':'none';rpUp()}if(e.target.id=='fi'){importar(e.target.files[0]);e.target.value=''}if(e.target.dataset.b){S.bud[e.target.dataset.b]=+e.target.value||0;save();R()}});
-const BK='<div class="card"><h3>💾 Backup dos dados</h3><div class="bk"><button id="ex">Exportar</button><button id="im">Importar</button></div><input type="file" id="fi" accept=".json,application/json" hidden><small style="color:var(--mu);display:block;margin-top:8px">Seus dados ficam só neste aparelho. Exporte de vez em quando e guarde o arquivo (Drive, WhatsApp ou e-mail). Para levar para outro aparelho, use Importar.</small></div>';
-let tt;function toast(m){const e=$('#ts');e.textContent=m;e.classList.add('o');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('o'),2600)}
-async function baixar(f,t){try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:t});return}}catch(e){if(e.name=='AbortError')return}
-const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Arquivo salvo ✔')}
-function exportar(){baixar(new File([JSON.stringify({app:'bolso',v:1,tx:S.tx,bud:S.bud},null,1)],'bolso-backup-'+today()+'.json',{type:'application/json'}),'Backup Bolso')}
-const ym=i=>Math.floor(i/12)+'-'+String(i%12+1).padStart(2,'0'),lb=i=>MS[i%12].slice(0,3)+'/'+Math.floor(i/12),dB=s=>s.slice(8)+'/'+s.slice(5,7)+'/'+s.slice(0,4);
-function occ(c){const o=[];for(let i=c.a;i<=c.b;i++)S.tx.forEach(t=>{const a=amt(t,i);if(!a||(c.tp=='r'&&t.t!='r')||(c.tp=='d'&&t.t=='r')||(c.cat&&t.cat!=c.cat)||(c.card&&(t.t!='c'||t.card!=c.card)))return;const y=Math.floor(i/12),m=i%12,d=Math.min(+t.date.slice(8),new Date(y,m+1,0).getDate());o.push({t,a,i,date:y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')})});return o.sort((p,q)=>p.date.localeCompare(q.date))}
-const tot=o=>{const T={rec:0,des:0,bc:{}};o.forEach(x=>{if(x.t.t=='r')T.rec+=x.a;else{T.des+=x.a;T.bc[x.t.cat]=(T.bc[x.t.cat]||0)+x.a}});return T};
-const pl=x=>x.t.t=='c'&&x.t.n>1?(x.i-ix(x.t)+1)+'/'+x.t.n:x.t.rec?'fixa':'';
-function cfg(){const p=$('#rpP').value;let a,b,nm;
-if(p=='m'){a=b=S.y*12+S.m;nm=MS[S.m]+' de '+S.y}else if(p=='y'){a=S.y*12;b=a+11;nm='Ano de '+S.y}
-else{const f=v=>{const q=v.split('-');return +q[0]*12+ +q[1]-1},A=$('#rpA').value,B=$('#rpB').value;a=A?f(A):S.y*12+S.m;b=B?f(B):a;if(b<a)[a,b]=[b,a];b=Math.min(b,a+119);nm=lb(a)+' a '+lb(b)}
-return{a,b,nm,tp:$('#rpT').value,cat:$('#rpK').value,card:$('#rpD').value}}
-function rpUp(){const o=occ(cfg()),T=tot(o);$('#rpS').innerHTML=`<b>${o.length}</b> lançamentos<br>Receitas <b class="p">${F(T.rec)}</b> · Despesas <b class="n">${F(T.des)}</b><br>Saldo <b>${F(T.rec-T.des)}</b>`;$('#pr').disabled=$('#cv').disabled=!o.length}
-function openRep(){const sh=$('#sh'),v=S.y+'-'+String(S.m+1).padStart(2,'0');sh.removeAttribute('data-t');
-sh.innerHTML=`<h3 style="margin:0">📑 Relatório / Exportar</h3><select id="rpP"><option value="m">Mês na tela (${MS[S.m]} ${S.y})</option><option value="y">Ano inteiro (${S.y})</option><option value="c">Período personalizado</option></select><div id="rpCu" style="display:none;gap:8px"><input type="month" id="rpA" value="${v}"><input type="month" id="rpB" value="${v}"></div><select id="rpT"><option value="">Receitas e despesas</option><option value="r">Só receitas</option><option value="d">Só despesas</option></select><select id="rpK"><option value="">Todas as categorias</option>${Object.keys(C).concat(['Salário','Trabalho extra']).map(k=>`<option>${k}</option>`).join('')}</select><select id="rpD"><option value="">Todos os cartões</option>${CARDS.map(k=>`<option>${k}</option>`).join('')}</select><div class="card" id="rpS"></div><div class="bk"><button id="pr">🖨️ Imprimir / PDF</button><button id="cv">⬇ Baixar CSV</button></div><button id="cl" style="background:none;border:0;color:var(--mu);padding:8px;width:100%">Fechar</button>`;rpUp();$('#m').classList.add('o')}
-function imprimir(){const c=cfg(),o=occ(c),T=tot(o),fl=[c.tp=='r'?'só receitas':c.tp=='d'?'só despesas':'',c.cat,c.card&&'Cartão '+c.card].filter(Boolean).join(' · ');
-const rows=o.map(x=>`<tr><td>${dB(x.date)}</td><td>${esc(x.t.desc)}</td><td>${x.t.cat}</td><td>${x.t.t=='r'?'Receita':x.t.t=='c'?'Cartão '+x.t.card:'Despesa'}${info(x.t,x.i)}</td><td class="r">${x.t.t=='r'?'':'−'}${F(x.a)}</td></tr>`).join('');
-let mm='';if(c.b>c.a){let r=0,d=0;for(let i=c.a;i<=c.b;i++){const s=tot(o.filter(x=>x.i==i));r+=s.rec;d+=s.des;mm+=`<tr><td>${MS[i%12]} ${Math.floor(i/12)}</td><td class="r">${F(s.rec)}</td><td class="r">${F(s.des)}</td><td class="r">${F(s.rec-s.des)}</td></tr>`}
-mm=`<h2>Resumo por mês</h2><table><tr><th>Mês</th><th class="r">Receitas</th><th class="r">Despesas</th><th class="r">Saldo</th></tr>${mm}<tr><th>Total</th><th class="r">${F(r)}</th><th class="r">${F(d)}</th><th class="r">${F(r-d)}</th></tr></table>`}
-const cats=Object.entries(T.bc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td class="r">${F(v)}</td><td class="r">${Math.round(v/T.des*100)}%</td></tr>`).join('');
-$('#rp').innerHTML=`<h1>Relatório de lançamentos</h1><p>${c.nm}${fl?' · '+fl:''} · gerado em ${new Date().toLocaleDateString('pt-BR')}</p><table class="s"><tr><td>Receitas</td><td class="r">${F(T.rec)}</td></tr><tr><td>Despesas</td><td class="r">${F(T.des)}</td></tr><tr><td><b>Saldo</b></td><td class="r"><b>${F(T.rec-T.des)}</b></td></tr></table>${mm}<h2>Lançamentos (${o.length})</h2><table><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Valor</th></tr>${rows||'<tr><td colspan="5">Sem lançamentos.</td></tr>'}</table>${cats?`<h2>Despesas por categoria</h2><table>${cats}</table>`:''}`;window.print()}
-function csv(){const c=cfg(),o=occ(c),T=tot(o);if(!o.length)return;const q=s=>{s=String(s);if(/^[=+\-@]/.test(s))s="'"+s;return /[;"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s},n=v=>v.toFixed(2).replace('.',',');
-const ln=[['Data','Descrição','Tipo','Categoria','Cartão','Parcela','Valor (R$)'].join(';')];
-o.forEach(x=>{const t=x.t;ln.push([dB(x.date),q(t.desc),t.t=='r'?'Receita':t.t=='c'?'Cartão':'Despesa',t.cat,t.t=='c'?t.card:'',pl(x),(t.t=='r'?'':'-')+n(x.a)].join(';'))});
-ln.push(['','','','','','Saldo',n(T.rec-T.des)].join(';'));
-baixar(new File(['\ufeff'+ln.join('\r\n')],'relatorio-'+ym(c.a)+(c.b>c.a?'_a_'+ym(c.b):'')+'.csv',{type:'text/csv'}),'Relatório '+c.nm)}
-function importar(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tx))throw 0;
-const tx=d.tx.filter(t=>t&&typeof t.date=='string'&&t.v>0&&['r','d','c'].includes(t.t));if(!confirm('Substituir os dados atuais por '+tx.length+' lançamentos do backup?'))return;
-S.tx=tx;S.bud=d.bud&&typeof d.bud=='object'?d.bud:{};save();R();toast('Backup restaurado ✔')}catch(e){toast('Arquivo de backup inválido')}};r.readAsText(f)}
-try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+const $ = s => document.querySelector(s), F = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const C = { Moradia: ['🏠', '#4f7cff'], Mercado: ['🛒', '#2fb36d'], Alimentação: ['🍽️', '#f59e0b'], Delivery: ['🛵', '#ec4899'], Transporte: ['🚗', '#d4a017'], Lazer: ['🎉', '#8b5cf6'], Saúde: ['💊', '#14b8a6'], Educação: ['📚', '#0ea5e9'], Assinaturas: ['📺', '#d946ef'], Compras: ['🛍️', '#f97316'], Dívidas: ['💳', '#64748b'], Outros: ['📦', '#94a3b8'] };
+const RC = { 'Salário': '💼', 'Trabalho extra': '💸', 'Outros': '➕' }, CARDS = ['Nubank', 'Mercado Pago','Neon','Ton','Outro'];
+const MS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const KW = [[/ifood|rappi|uber eats|delivery/, 'Delivery'], [/uber|99 pop|táxi|posto|gasolina|combust|estacion|pedágio|metrô|ônibus/, 'Transporte'], [/mercado livre|amazon|shopee|shein|magalu|loja|tênis|roupa|notebook/, 'Compras'], [/mercado|atacad|assaí|carrefour|feira|açougue|hortifruti/, 'Mercado'], [/restaurante|almoço|jantar|lanche|padaria|café|pizza/, 'Alimentação'], [/cinema|show|ingresso|viagem|balada|teatro/, 'Lazer'], [/netflix|spotify|disney|hbo|icloud|assinatura/, 'Assinaturas'], [/aluguel|condom|luz|energia|água|internet|gás|iptu/, 'Moradia'], [/farmác|drogaria|médic|consulta|dentista|academia|plano de saúde|exame/, 'Saúde'], [/escola|faculdade|curso|mensalidade|livro/, 'Educação'], [/empréstimo|financiamento|juros|consórcio/, 'Dívidas']];
+let S = {}; try { S = JSON.parse(localStorage.getItem('fin1')) || {} } catch (e) { }
+S.tx = S.tx || []; S.bud = S.bud || {}; const nw = new Date(); S.y = nw.getFullYear(); S.m = nw.getMonth(); S.tab = 'home';
+const save = () => { try { localStorage.setItem('fin1', JSON.stringify({ tx: S.tx, bud: S.bud })) } catch (e) { } };
+const ix = t => +t.date.slice(0, 4) * 12 + +t.date.slice(5, 7) - 1, en = t => t.rec ? 1e9 : t.t == 'c' ? ix(t) + (t.n || 1) - 1 : ix(t);
+const amt = (t, i) => i >= ix(t) && i <= en(t) ? (t.t == 'c' ? t.v / (t.n || 1) : t.v) : 0;
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML };
+const info = (t, cur) => t.t == 'c' && t.n > 1 ? ` · ${cur - ix(t) + 1}/${t.n}` : t.rec ? ' · fixa' : '';
+const pd = n => String(n).padStart(2, '0');
+const row = (x, cur) => { const t = x.t, r = t.t == 'r', cl = r ? '#1fa971' : (C[t.cat] || C.Outros)[1], y = Math.floor(cur / 12), m = cur % 12, d = Math.min(+t.date.slice(8), new Date(y, m + 1, 0).getDate()), pv = y + '-' + pd(m + 1) + '-' + pd(d) > today(); return `<div class="it"><span class="ic" style="background:${cl}28">${r ? RC[t.cat] || '💰' : (C[t.cat] || C.Outros)[0]}</span><div class="g1"><b>${esc(t.desc)}</b><small>${t.cat} · ${pd(d)}/${pd(m + 1)}${info(t, cur)}${t.t == 'c' ? ' · ' + t.card : ''}${pv ? ' · <span style="color:var(--pri);font-weight:700">previsto</span>' : ''}</small></div><span class="am ${r ? 'p' : 'n'}">${r ? '' : '−'}${F(x.a)}</span><button class="x" data-del="${t.id}">✕</button></div>` };
+function donut(bc, tot) {
+    const e = Object.entries(bc).sort((a, b) => b[1] - a[1]); if (!e.length) return '<div class="card em">Nenhuma despesa neste mês.<br>Toque no + para lançar.</div>'; let o = 25, s = '';
+    e.forEach(([k, v]) => { const p = v / tot * 100; s += `<circle r="15.9155" cx="21" cy="21" fill="none" stroke="${(C[k] || C.Outros)[1]}" stroke-width="5" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="${o}"/>`; o -= p });
+    return `<div class="card"><h3>Despesas por categoria</h3><div class="cd"><svg viewBox="0 0 42 42" width="190" height="190">${s}<text x="21" y="21.5" text-anchor="middle" font-size="3.6" font-weight="700" style="fill:var(--tx)">${F(tot)}</text></svg></div>` + e.map(([k, v]) => `<div class="lg"><span class="dot" style="background:${(C[k] || C.Outros)[1]}"></span><span class="g1">${(C[k] || C.Outros)[0]} ${k}</span><b>${F(v)}</b><small style="color:var(--mu);width:38px;text-align:right">${Math.round(v / tot * 100)}%</small></div>`).join('') + '</div>'
+}
+function R() {
+    const cur = S.y * 12 + S.m, its = S.tx.map(t => ({ t, a: amt(t, cur) })).filter(x => x.a).sort((a, b) => b.t.date.localeCompare(a.t.date));
+    const ds = its.filter(x => x.t.t != 'r'), rec = its.filter(x => x.t.t == 'r').reduce((s, x) => s + x.a, 0), des = ds.reduce((s, x) => s + x.a, 0);
+    $('#mo').textContent = MS[S.m] + ' ' + S.y; $('#sal').textContent = F(rec - des); $('#rec').textContent = F(rec); $('#des').textContent = F(des);
+    document.querySelectorAll('nav [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t == S.tab));
+    const bc = {}; ds.forEach(x => bc[x.t.cat] = (bc[x.t.cat] || 0) + x.a); let h = '';
+    if (S.tab == 'home') h = donut(bc, des) + BK;
+    if (S.tab == 'tx') h = '<div class="bk" style="margin-bottom:12px"><button id="rpt">📑 Relatório / Exportar</button></div>' + (its.length ? `<div class="card">${its.map(x => row(x, cur)).join('')}</div>` : '<div class="card em">Sem lançamentos neste mês.</div>');
+    if (S.tab == 'cc') {
+        h = CARDS.map(k => {
+            const l = its.filter(x => x.t.t == 'c' && x.t.card == k), f = l.reduce((s, x) => s + x.a, 0);
+            const rest = S.tx.filter(t => t.t == 'c' && t.card == k).reduce((s, t) => s + (t.v / (t.n || 1)) * Math.max(0, en(t) - Math.max(cur, ix(t) - 1)), 0);
+            return `<div class="card"><h3>💳 ${k}</h3><div class="bg"><div class="g1"><small style="color:var(--mu)">Fatura do mês</small><div class="big n">${F(f)}</div></div><div style="text-align:right"><small style="color:var(--mu)">Parcelas a vencer</small><br><b>${F(rest)}</b></div></div>${l.map(x => row(x, cur)).join('')}</div>`
+        }).join('')
+    }
+    if (S.tab == 'bu') h = '<div class="card"><h3>Limite mensal por categoria</h3>' + Object.keys(C).map(k => { const sp = bc[k] || 0, l = S.bud[k] || 0, p = l ? sp / l * 100 : 0; return `<div style="padding:8px 0;border-top:1px solid var(--bd)"><div class="bg"><span class="g1">${C[k][0]} ${k}<small style="color:var(--mu);display:block">${F(sp)} gastos</small></span><input type="number" inputmode="decimal" placeholder="Limite" value="${l || ''}" data-b="${k}"></div>${l ? `<div class="bar"><i style="width:${Math.min(100, p)}%;background:${p > 100 ? 'var(--r)' : p > 80 ? '#f59e0b' : 'var(--g)'}"></i></div>` : ''}</div>` }).join('') + '</div>';
+    $('#v').innerHTML = h
+}
+const dDef = () => { const n = new Date(), dm = new Date(S.y, S.m + 1, 0).getDate(); return S.y + '-' + String(S.m + 1).padStart(2, '0') + '-' + String(Math.min(n.getDate(), dm)).padStart(2, '0') };
+let FM; const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` };
+function chips() { const L = FM.t == 'r' ? Object.keys(RC) : Object.keys(C); $('#ch').innerHTML = L.map(k => `<button data-c="${k}" class="${FM.cat == k ? 's' : ''}" style="${FM.cat == k ? 'background:' + (FM.t == 'r' ? '#1fa971' : C[k][1]) : ''}">${FM.t == 'r' ? RC[k] : C[k][0]} ${k}</button>`).join('') }
+function open() { FM = { t: 'd', cat: 'Outros', man: false }; $('#sh').dataset.t = 'd'; $('#sh').innerHTML = `<div class="seg"><button data-k="d">Despesa</button><button data-k="r">Receita</button><button data-k="c">Cartão</button></div><input id="va" inputmode="decimal" placeholder="Valor (R$) ex.: 49,90" class="big"><input id="de" placeholder="Descrição obrigatória (ex.: iFood, Uber, Salário)"><div class="chips" id="ch"></div><div class="lb">📅 Data do lançamento (pode ser de qualquer mês, inclusive futuro, para planejar)</div><input type="date" id="dt" value="${dDef()}"><div class="c"><select id="cd">${CARDS.map(k => `<option>${k}</option>`).join('')}</select><input id="np" type="number" min="1" max="60" placeholder="Parcelas" value="1"></div><label class="rc" for="rp"><span>🔁 Repete todos os meses<small>Mesmo valor, todo mês, a partir da data escolhida (aluguel, salário, assinatura)</small></span><input type="checkbox" id="rp" class="sw"></label><button id="sv">Salvar</button>`; chips(); $('#m').classList.add('o') }
+document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) { if (e.target.id == 'm') $('#m').classList.remove('o'); return }
+    if (b.id == 'pv' || b.id == 'nx') { S.m += b.id == 'pv' ? -1 : 1; if (S.m < 0) { S.m = 11; S.y-- } if (S.m > 11) { S.m = 0; S.y++ } R() }
+    else if (b.dataset.t) { S.tab = b.dataset.t; R() } else if (b.id == 'fab') open();
+    else if (b.dataset.k) { FM.t = b.dataset.k; FM.man = false; FM.cat = FM.t == 'r' ? 'Salário' : 'Outros'; $('#sh').dataset.t = FM.t; if (FM.t != 'r') det(); chips() }
+    else if (b.dataset.c) { FM.cat = b.dataset.c; FM.man = true; chips() }
+    else if (b.dataset.del) { if (b.classList.contains('w')) { S.tx = S.tx.filter(t => t.id != b.dataset.del); save(); R() } else { b.classList.add('w'); b.textContent = 'Excluir?' } }
+    else if (b.id == 'rpt') openRep(); else if (b.id == 'cl') $('#m').classList.remove('o'); else if (b.id == 'pr') imprimir(); else if (b.id == 'cv') csv(); else if (b.id == 'ex') exportar(); else if (b.id == 'im') $('#fi').click();
+    else if (b.id == 'sv') {
+        const raw = $('#va').value.trim(), v = raw.includes(',') ? parseFloat(raw.replace(/\./g, '').replace(',', '.')) : parseFloat(raw), d = $('#de').value.trim(); if (!(v > 0) || !d || !$('#dt').value) { $('#va').style.borderColor = 'var(--r)'; return }
+        const rp = $('#rp').checked, dt = $('#dt').value; S.tx.push({ id: Date.now(), t: FM.t, v, desc: d, cat: FM.cat, date: dt, n: FM.t == 'c' && !rp ? Math.max(1, +$('#np').value || 1) : 1, card: $('#cd').value, rec: rp }); save(); $('#m').classList.remove('o'); const ny = +dt.slice(0, 4), nm = +dt.slice(5, 7) - 1; if (ny != S.y || nm != S.m) { S.y = ny; S.m = nm; toast('Lançado em ' + MS[nm] + ' de ' + ny) } else toast('Lançamento salvo ✔'); R()
+    }
+});
+function det() { if (FM.man || FM.t == 'r') return; const d = ($('#de').value || '').toLowerCase(); const k = KW.find(x => x[0].test(d)); FM.cat = k ? k[1] : 'Outros' }
+document.addEventListener('input', e => { if (e.target.id == 'de' && !FM.man) { det(); chips() } });
+document.addEventListener('change', e => { if (e.target.id == 'rp') { const n = $('#np'); n.disabled = e.target.checked; if (e.target.checked) n.value = 1 } if (e.target.id && e.target.id.startsWith('rp')) { if (e.target.id == 'rpP') $('#rpCu').style.display = e.target.value == 'c' ? 'flex' : 'none'; rpUp() } if (e.target.id == 'fi') { importar(e.target.files[0]); e.target.value = '' } if (e.target.dataset.b) { S.bud[e.target.dataset.b] = +e.target.value || 0; save(); R() } });
+const BK = '<div class="card"><h3>💾 Backup dos dados</h3><div class="bk"><button id="ex">Exportar</button><button id="im">Importar</button></div><input type="file" id="fi" accept=".json,application/json" hidden><small style="color:var(--mu);display:block;margin-top:8px">Seus dados ficam só neste aparelho. Exporte de vez em quando e guarde o arquivo (Drive, WhatsApp ou e-mail). Para levar para outro aparelho, use Importar.</small></div>';
+let tt; function toast(m) { const e = $('#ts'); e.textContent = m; e.classList.add('o'); clearTimeout(tt); tt = setTimeout(() => e.classList.remove('o'), 2600) }
+async function baixar(f, t) {
+    try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: t }); return } } catch (e) { if (e.name == 'AbortError') return }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Arquivo salvo ✔')
+}
+function exportar() { baixar(new File([JSON.stringify({ app: 'bolso', v: 1, tx: S.tx, bud: S.bud }, null, 1)], 'bolso-backup-' + today() + '.json', { type: 'application/json' }), 'Backup Bolso') }
+const ym = i => Math.floor(i / 12) + '-' + String(i % 12 + 1).padStart(2, '0'), lb = i => MS[i % 12].slice(0, 3) + '/' + Math.floor(i / 12), dB = s => s.slice(8) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4);
+function occ(c) { const o = []; for (let i = c.a; i <= c.b; i++)S.tx.forEach(t => { const a = amt(t, i); if (!a || (c.tp == 'r' && t.t != 'r') || (c.tp == 'd' && t.t == 'r') || (c.cat && t.cat != c.cat) || (c.card && (t.t != 'c' || t.card != c.card))) return; const y = Math.floor(i / 12), m = i % 12, d = Math.min(+t.date.slice(8), new Date(y, m + 1, 0).getDate()); o.push({ t, a, i, date: y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0') }) }); return o.sort((p, q) => p.date.localeCompare(q.date)) }
+const tot = o => { const T = { rec: 0, des: 0, bc: {} }; o.forEach(x => { if (x.t.t == 'r') T.rec += x.a; else { T.des += x.a; T.bc[x.t.cat] = (T.bc[x.t.cat] || 0) + x.a } }); return T };
+const pl = x => x.t.t == 'c' && x.t.n > 1 ? (x.i - ix(x.t) + 1) + '/' + x.t.n : x.t.rec ? 'fixa' : '';
+function cfg() {
+    const p = $('#rpP').value; let a, b, nm;
+    if (p == 'm') { a = b = S.y * 12 + S.m; nm = MS[S.m] + ' de ' + S.y } else if (p == 'y') { a = S.y * 12; b = a + 11; nm = 'Ano de ' + S.y }
+    else { const f = v => { const q = v.split('-'); return +q[0] * 12 + +q[1] - 1 }, A = $('#rpA').value, B = $('#rpB').value; a = A ? f(A) : S.y * 12 + S.m; b = B ? f(B) : a; if (b < a) [a, b] = [b, a]; b = Math.min(b, a + 119); nm = lb(a) + ' a ' + lb(b) }
+    return { a, b, nm, tp: $('#rpT').value, cat: $('#rpK').value, card: $('#rpD').value }
+}
+function rpUp() { const o = occ(cfg()), T = tot(o); $('#rpS').innerHTML = `<b>${o.length}</b> lançamentos<br>Receitas <b class="p">${F(T.rec)}</b> · Despesas <b class="n">${F(T.des)}</b><br>Saldo <b>${F(T.rec - T.des)}</b>`; $('#pr').disabled = $('#cv').disabled = !o.length }
+function openRep() {
+    const sh = $('#sh'), v = S.y + '-' + String(S.m + 1).padStart(2, '0'); sh.removeAttribute('data-t');
+    sh.innerHTML = `<h3 style="margin:0">📑 Relatório / Exportar</h3><select id="rpP"><option value="m">Mês na tela (${MS[S.m]} ${S.y})</option><option value="y">Ano inteiro (${S.y})</option><option value="c">Período personalizado</option></select><div id="rpCu" style="display:none;gap:8px"><input type="month" id="rpA" value="${v}"><input type="month" id="rpB" value="${v}"></div><select id="rpT"><option value="">Receitas e despesas</option><option value="r">Só receitas</option><option value="d">Só despesas</option></select><select id="rpK"><option value="">Todas as categorias</option>${Object.keys(C).concat(['Salário', 'Trabalho extra']).map(k => `<option>${k}</option>`).join('')}</select><select id="rpD"><option value="">Todos os cartões</option>${CARDS.map(k => `<option>${k}</option>`).join('')}</select><div class="card" id="rpS"></div><div class="bk"><button id="pr">🖨️ Imprimir / PDF</button><button id="cv">⬇ Baixar CSV</button></div><button id="cl" style="background:none;border:0;color:var(--mu);padding:8px;width:100%">Fechar</button>`; rpUp(); $('#m').classList.add('o')
+}
+function imprimir() {
+    const c = cfg(), o = occ(c), T = tot(o), fl = [c.tp == 'r' ? 'só receitas' : c.tp == 'd' ? 'só despesas' : '', c.cat, c.card && 'Cartão ' + c.card].filter(Boolean).join(' · ');
+    const rows = o.map(x => `<tr><td>${dB(x.date)}</td><td>${esc(x.t.desc)}</td><td>${x.t.cat}</td><td>${x.t.t == 'r' ? 'Receita' : x.t.t == 'c' ? 'Cartão ' + x.t.card : 'Despesa'}${info(x.t, x.i)}</td><td class="r">${x.t.t == 'r' ? '' : '−'}${F(x.a)}</td></tr>`).join('');
+    let mm = ''; if (c.b > c.a) {
+        let r = 0, d = 0; for (let i = c.a; i <= c.b; i++) { const s = tot(o.filter(x => x.i == i)); r += s.rec; d += s.des; mm += `<tr><td>${MS[i % 12]} ${Math.floor(i / 12)}</td><td class="r">${F(s.rec)}</td><td class="r">${F(s.des)}</td><td class="r">${F(s.rec - s.des)}</td></tr>` }
+        mm = `<h2>Resumo por mês</h2><table><tr><th>Mês</th><th class="r">Receitas</th><th class="r">Despesas</th><th class="r">Saldo</th></tr>${mm}<tr><th>Total</th><th class="r">${F(r)}</th><th class="r">${F(d)}</th><th class="r">${F(r - d)}</th></tr></table>`
+    }
+    const cats = Object.entries(T.bc).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td>${k}</td><td class="r">${F(v)}</td><td class="r">${Math.round(v / T.des * 100)}%</td></tr>`).join('');
+    $('#rp').innerHTML = `<h1>Relatório de lançamentos</h1><p>${c.nm}${fl ? ' · ' + fl : ''} · gerado em ${new Date().toLocaleDateString('pt-BR')}</p><table class="s"><tr><td>Receitas</td><td class="r">${F(T.rec)}</td></tr><tr><td>Despesas</td><td class="r">${F(T.des)}</td></tr><tr><td><b>Saldo</b></td><td class="r"><b>${F(T.rec - T.des)}</b></td></tr></table>${mm}<h2>Lançamentos (${o.length})</h2><table><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th class="r">Valor</th></tr>${rows || '<tr><td colspan="5">Sem lançamentos.</td></tr>'}</table>${cats ? `<h2>Despesas por categoria</h2><table>${cats}</table>` : ''}`; window.print()
+}
+function csv() {
+    const c = cfg(), o = occ(c), T = tot(o); if (!o.length) return; const q = s => { s = String(s); if (/^[=+\-@]/.test(s)) s = "'" + s; return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s }, n = v => v.toFixed(2).replace('.', ',');
+    const ln = [['Data', 'Descrição', 'Tipo', 'Categoria', 'Cartão', 'Parcela', 'Valor (R$)'].join(';')];
+    o.forEach(x => { const t = x.t; ln.push([dB(x.date), q(t.desc), t.t == 'r' ? 'Receita' : t.t == 'c' ? 'Cartão' : 'Despesa', t.cat, t.t == 'c' ? t.card : '', pl(x), (t.t == 'r' ? '' : '-') + n(x.a)].join(';')) });
+    ln.push(['', '', '', '', '', 'Saldo', n(T.rec - T.des)].join(';'));
+    baixar(new File(['\ufeff' + ln.join('\r\n')], 'relatorio-' + ym(c.a) + (c.b > c.a ? '_a_' + ym(c.b) : '') + '.csv', { type: 'text/csv' }), 'Relatório ' + c.nm)
+}
+function importar(f) {
+    if (!f) return; const r = new FileReader(); r.onload = () => {
+        try {
+            const d = JSON.parse(r.result); if (!Array.isArray(d.tx)) throw 0;
+            const tx = d.tx.filter(t => t && typeof t.date == 'string' && t.v > 0 && ['r', 'd', 'c'].includes(t.t)); if (!confirm('Substituir os dados atuais por ' + tx.length + ' lançamentos do backup?')) return;
+            S.tx = tx; S.bud = d.bud && typeof d.bud == 'object' ? d.bud : {}; save(); R(); toast('Backup restaurado ✔')
+        } catch (e) { toast('Arquivo de backup inválido') }
+    }; r.readAsText(f)
+}
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist() } catch (e) { }
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
 
 R();
