@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s),F=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const C={Moradia:['🏠','#4f7cff'],Mercado:['🛒','#2fb36d'],Alimentação:['🍽️','#f59e0b'],Delivery:['🛵','#ec4899'],Transporte:['🚗','#d4a017'],Lazer:['🎉','#8b5cf6'],Saúde:['💊','#14b8a6'],Educação:['📚','#0ea5e9'],Assinaturas:['📺','#d946ef'],Compras:['🛍️','#f97316'],Dívidas:['💳','#64748b'],Outros:['📦','#94a3b8']};
-const RC={'Salário':'💼','Trabalho extra':'💸','Outros':'➕'},CARDS=['Nubank','Itaú','Inter','C6 Bank','Outro'];
+const RC={'Salário':'💼','Trabalho extra':'💸','Outros':'➕'},CARDS=['Nubank','Neon','Inter','MercadoPago','Outro'];
 const MS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const KW=[[/ifood|rappi|uber eats|delivery/,'Delivery'],[/uber|99 pop|táxi|posto|gasolina|combust|estacion|pedágio|metrô|ônibus/,'Transporte'],[/mercado livre|amazon|shopee|shein|magalu|loja|tênis|roupa|notebook/,'Compras'],[/mercado|atacad|assaí|carrefour|feira|açougue|hortifruti/,'Mercado'],[/restaurante|almoço|jantar|lanche|padaria|café|pizza/,'Alimentação'],[/cinema|show|ingresso|viagem|balada|teatro/,'Lazer'],[/netflix|spotify|disney|hbo|icloud|assinatura/,'Assinaturas'],[/aluguel|condom|luz|energia|água|internet|gás|iptu/,'Moradia'],[/farmác|drogaria|médic|consulta|dentista|academia|plano de saúde|exame/,'Saúde'],[/escola|faculdade|curso|mensalidade|livro/,'Educação'],[/empréstimo|financiamento|juros|consórcio/,'Dívidas']];
 let S={};try{S=JSON.parse(localStorage.getItem('fin1'))||{}}catch(e){}
